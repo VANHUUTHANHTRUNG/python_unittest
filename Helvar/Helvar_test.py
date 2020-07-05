@@ -1,7 +1,7 @@
 import unittest
 
-from MEAS import *
-from DUT import *
+from classes.MEAS import *
+from classes.DUT import *
 
 
 # Compare if DUT value is in acceptable range, err range given in % (eg: err_range = 5)
@@ -19,7 +19,7 @@ class Helvar_test(unittest.TestCase):
 # Compare DUT values with MEAS value, save result to file
     def test_err_range(self):
         try:
-            f = open("test_result.csv", "w")
+            f = open("test_result/test_result.csv", "w")
         except FileNotFoundError:
             print("Error in creating the file, File not found!")
         else:
@@ -32,25 +32,18 @@ class Helvar_test(unittest.TestCase):
                 accepted_current = is_acceptable_value(self.DUT_list[i].get_current(),
                                                        self.MEAS_list[i].get_current(),
                                                        5)
+                test_result = "{:s};{:.2f};{:.2f};{:.2f};{:.2f}".format(
+                    self.DUT_list[i].get_name(),
+                    self.DUT_list[i].get_current(),
+                    self.MEAS_list[i].get_current(),
+                    self.DUT_list[i].get_voltage(),
+                    self.MEAS_list[i].get_voltage())
                 if accepted_current and accepted_voltage:
-                    f.write("{:s};{:.2f};{:.2f};{:.2f};{:.2f};{:s}\n".format(
-                        self.DUT_list[i].get_name(),
-                        self.DUT_list[i].get_current(),
-                        self.MEAS_list[i].get_current(),
-                        self.DUT_list[i].get_voltage(),
-                        self.MEAS_list[i].get_voltage(),
-                        "PASS"
-                    ))
-                    passed_test = passed_test + 1
+                    passed_test += 1
+                    test_result += ";PASS\n"
                 else:
-                    f.write("{:s};{:.2f};{:.2f};{:.2f};{:.2f};{:s}\n".format(
-                        self.DUT_list[i].get_name(),
-                        self.DUT_list[i].get_current(),
-                        self.MEAS_list[i].get_current(),
-                        self.DUT_list[i].get_voltage(),
-                        self.MEAS_list[i].get_voltage(),
-                        "FAIL"
-                    ))
+                    test_result += ";FAIL\n"
+                f.write(test_result)
             f.close()
 
         self.assertEqual(passed_test, len(self.DUT_list), "Not all values are in acceptable range")
